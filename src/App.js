@@ -3,7 +3,7 @@ import React from "react";
 import "./App.css";
 import { getAll, search, update } from "./BooksAPI";
 
-const BookItem = ({ imageLinks, title, authors, shelf }) => {
+const BookItem = ({ id, imageLinks, title, authors, shelf, changeShelf }) => {
   return (
     <div className="book">
       <div className="book-top">
@@ -16,14 +16,15 @@ const BookItem = ({ imageLinks, title, authors, shelf }) => {
           }}
         />
         <div className="book-shelf-changer">
-          <select>
-            <option value="move" disabled>
-              Move to...
-            </option>
+          <select
+            onChange={e => changeShelf(e.currentTarget.value)}
+            defaultValue={shelf}
+          >
+            <option disabled>Move to...</option>
             <option value="currentlyReading">Currently Reading</option>
             <option value="wantToRead">Want to Read</option>
             <option value="read">Read</option>
-            <option value="none">None</option>
+            <option value="None">None</option>
           </select>
         </div>
       </div>
@@ -48,6 +49,10 @@ class BooksApp extends React.Component {
   };
 
   componentDidMount() {
+    this.getUserBooks();
+  }
+
+  getUserBooks() {
     getAll().then(result => {
       let readBooks = result.filter(item => {
         return item.shelf === "read";
@@ -59,13 +64,20 @@ class BooksApp extends React.Component {
         return item.shelf === "currentlyReading";
       });
 
-      search("Astronomy").then(result => {
-        console.log(result);
-      });
+      // search("Astronomy").then(result => {
+      //   console.log(result);
+      // });
 
       this.setState({ readBooks, wantToReadBooks, currentlyReadingBooks });
     });
   }
+
+  changeShelf = (book, shelf) => {
+    update(book, shelf).then(response => {
+      console.log(response);
+      this.getUserBooks();
+    });
+  };
 
   render() {
     return (
@@ -109,7 +121,12 @@ class BooksApp extends React.Component {
                       {this.state.currentlyReadingBooks.map(book => {
                         return (
                           <li key={book.id}>
-                            <BookItem {...book} />
+                            <BookItem
+                              {...book}
+                              changeShelf={shelf =>
+                                this.changeShelf(book, shelf)
+                              }
+                            />
                           </li>
                         );
                       })}
@@ -123,7 +140,12 @@ class BooksApp extends React.Component {
                       {this.state.wantToReadBooks.map(book => {
                         return (
                           <li key={book.id}>
-                            <BookItem {...book} />
+                            <BookItem
+                              {...book}
+                              changeShelf={shelf =>
+                                this.changeShelf(book, shelf)
+                              }
+                            />
                           </li>
                         );
                       })}
@@ -137,7 +159,12 @@ class BooksApp extends React.Component {
                       {this.state.readBooks.map(book => {
                         return (
                           <li key={book.id}>
-                            <BookItem {...book} />
+                            <BookItem
+                              {...book}
+                              changeShelf={shelf =>
+                                this.changeShelf(book, shelf)
+                              }
+                            />
                           </li>
                         );
                       })}
