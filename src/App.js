@@ -1,38 +1,9 @@
 import React from "react";
-// import * as BooksAPI from './BooksAPI'
+import * as BooksAPI from "./BooksAPI";
+import { Route, Switch } from "react-router-dom";
+import Home from "./components/Home";
+import Search from "./components/Search";
 import "./App.css";
-import { getAll, search, update } from "./BooksAPI";
-
-const BookItem = ({ id, imageLinks, title, authors, shelf, changeShelf }) => {
-  return (
-    <div className="book">
-      <div className="book-top">
-        <div
-          className="book-cover"
-          style={{
-            width: 128,
-            height: 193,
-            backgroundImage: `url("${imageLinks.thumbnail}")`
-          }}
-        />
-        <div className="book-shelf-changer">
-          <select
-            onChange={e => changeShelf(e.currentTarget.value)}
-            defaultValue={shelf}
-          >
-            <option disabled>Move to...</option>
-            <option value="currentlyReading">Currently Reading</option>
-            <option value="wantToRead">Want to Read</option>
-            <option value="read">Read</option>
-            <option value="None">None</option>
-          </select>
-        </div>
-      </div>
-      <div className="book-title">{title}</div>
-      <div className="book-authors">{authors.join(", ")}</div>
-    </div>
-  );
-};
 
 class BooksApp extends React.Component {
   state = {
@@ -53,7 +24,7 @@ class BooksApp extends React.Component {
   }
 
   getUserBooks() {
-    getAll().then(result => {
+    BooksAPI.getAll().then(result => {
       let readBooks = result.filter(item => {
         return item.shelf === "read";
       });
@@ -64,16 +35,12 @@ class BooksApp extends React.Component {
         return item.shelf === "currentlyReading";
       });
 
-      // search("Astronomy").then(result => {
-      //   console.log(result);
-      // });
-
       this.setState({ readBooks, wantToReadBooks, currentlyReadingBooks });
     });
   }
 
   changeShelf = (book, shelf) => {
-    update(book, shelf).then(response => {
+    BooksAPI.update(book, shelf).then(response => {
       console.log(response);
       this.getUserBooks();
     });
@@ -82,104 +49,20 @@ class BooksApp extends React.Component {
   render() {
     return (
       <div className="app">
-        {this.state.showSearchPage ? (
-          <div className="search-books">
-            <div className="search-books-bar">
-              <button
-                className="close-search"
-                onClick={() => this.setState({ showSearchPage: false })}
-              >
-                Close
-              </button>
-              <div className="search-books-input-wrapper">
-                {/*
-                  NOTES: The search from BooksAPI is limited to a particular set of search terms.
-                  You can find these search terms here:
-                  https://github.com/udacity/reactnd-project-myreads-starter/blob/master/SEARCH_TERMS.md
-
-                  However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
-                  you don't find a specific author or title. Every search is limited by search terms.
-                */}
-                <input type="text" placeholder="Search by title or author" />
-              </div>
-            </div>
-            <div className="search-books-results">
-              <ol className="books-grid" />
-            </div>
-          </div>
-        ) : (
-          <div className="list-books">
-            <div className="list-books-title">
-              <h1>MyReads</h1>
-            </div>
-            <div className="list-books-content">
-              <div>
-                <div className="bookshelf">
-                  <h2 className="bookshelf-title">Currently Reading</h2>
-                  <div className="bookshelf-books">
-                    <ol className="books-grid">
-                      {this.state.currentlyReadingBooks.map(book => {
-                        return (
-                          <li key={book.id}>
-                            <BookItem
-                              {...book}
-                              changeShelf={shelf =>
-                                this.changeShelf(book, shelf)
-                              }
-                            />
-                          </li>
-                        );
-                      })}
-                    </ol>
-                  </div>
-                </div>
-                <div className="bookshelf">
-                  <h2 className="bookshelf-title">Want to Read</h2>
-                  <div className="bookshelf-books">
-                    <ol className="books-grid">
-                      {this.state.wantToReadBooks.map(book => {
-                        return (
-                          <li key={book.id}>
-                            <BookItem
-                              {...book}
-                              changeShelf={shelf =>
-                                this.changeShelf(book, shelf)
-                              }
-                            />
-                          </li>
-                        );
-                      })}
-                    </ol>
-                  </div>
-                </div>
-                <div className="bookshelf">
-                  <h2 className="bookshelf-title">Read</h2>
-                  <div className="bookshelf-books">
-                    <ol className="books-grid">
-                      {this.state.readBooks.map(book => {
-                        return (
-                          <li key={book.id}>
-                            <BookItem
-                              {...book}
-                              changeShelf={shelf =>
-                                this.changeShelf(book, shelf)
-                              }
-                            />
-                          </li>
-                        );
-                      })}
-                    </ol>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="open-search">
-              <button onClick={() => this.setState({ showSearchPage: true })}>
-                Add a book
-              </button>
-            </div>
-          </div>
-        )}
+        <Switch>
+          <Route
+            path="/search"
+            render={props => (
+              <Search {...this.state} changeShelf={this.changeShelf} />
+            )}
+          />
+          <Route
+            path="/"
+            render={props => (
+              <Home {...this.state} changeShelf={this.changeShelf} />
+            )}
+          />
+        </Switch>
       </div>
     );
   }
