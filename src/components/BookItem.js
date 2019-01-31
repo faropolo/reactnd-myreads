@@ -2,10 +2,10 @@ import React from "react";
 
 export default function BookItem({
   id,
-  imageLinks,
-  title,
-  authors,
-  shelf,
+  imageLinks = { thumbnail: "" },
+  title = "",
+  authors = [""],
+  shelf = "",
   changeShelf
 }) {
   return (
@@ -28,7 +28,7 @@ export default function BookItem({
             <option value="currentlyReading">Currently Reading</option>
             <option value="wantToRead">Want to Read</option>
             <option value="read">Read</option>
-            <option value="None">None</option>
+            <option value="none">None</option>
           </select>
         </div>
       </div>

@@ -7,16 +7,20 @@ import "./App.css";
 
 class BooksApp extends React.Component {
   state = {
-    /**
-     * TODO: Instead of using this state variable to keep track of which page
-     * we're on, use the URL in the browser's address bar. This will ensure that
-     * users can use the browser's back and forward buttons to navigate between
-     * pages, as well as provide a good URL they can bookmark and share.
-     */
-    showSearchPage: false,
-    currentlyReadingBooks: [],
-    wantToReadBooks: [],
-    readBooks: []
+    shelfs: {
+      currentlyReadingBooks: {
+        title: "Currently Reading",
+        books: []
+      },
+      wantToReadBooks: {
+        title: "Want to Read",
+        books: []
+      },
+      readBooks: {
+        title: "Read",
+        books: []
+      }
+    }
   };
 
   componentDidMount() {
@@ -25,28 +29,42 @@ class BooksApp extends React.Component {
 
   getUserBooks() {
     BooksAPI.getAll().then(result => {
-      let readBooks = result.filter(item => {
+      let {
+        readBooks,
+        wantToReadBooks,
+        currentlyReadingBooks
+      } = this.state.shelfs;
+
+      readBooks.books = result.filter(item => {
         return item.shelf === "read";
       });
-      let wantToReadBooks = result.filter(item => {
+
+      wantToReadBooks.books = result.filter(item => {
         return item.shelf === "wantToRead";
       });
-      let currentlyReadingBooks = result.filter(item => {
+
+      currentlyReadingBooks.books = result.filter(item => {
         return item.shelf === "currentlyReading";
       });
 
-      this.setState({ readBooks, wantToReadBooks, currentlyReadingBooks });
+      this.setState({
+        shelfs: {
+          currentlyReadingBooks,
+          wantToReadBooks,
+          readBooks
+        }
+      });
     });
   }
 
   changeShelf = (book, shelf) => {
     BooksAPI.update(book, shelf).then(response => {
-      console.log(response);
       this.getUserBooks();
     });
   };
 
   render() {
+    console.log(this.state);
     return (
       <div className="app">
         <Switch>
